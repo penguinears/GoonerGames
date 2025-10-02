@@ -1,101 +1,5 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Gooners Game</title>
-<style>
-:root{--pink:#ff5fa8;--dark:#0b2b1f;}
-html,body{margin:0;padding:0;height:100%;font-family:Arial, sans-serif;background:linear-gradient(180deg,#061a13,#0b2b1f);color:#eafaf0;}
-.page{display:none;min-height:100vh;padding:20px;box-sizing:border-box}
-.active{display:block}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-header h1{color:var(--pink);margin:0;font-size:28px}
-button{background:var(--pink);border:none;color:#050505;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:16px}
-.intro{text-align:center;max-width:90%;margin:0 auto}
-.intro h2{font-size:24px;margin-bottom:16px}
-.intro p, .intro ul{font-size:16px;line-height:1.5}
-.frames{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
-.frame{border:6px solid var(--pink);height:100px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold}
-.game-container{display:flex;flex-direction:column;gap:20px;align-items:center;}
-.game-area{width:100%;max-width:400px;position:relative;background:rgba(0,0,0,0.25);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.pink-frame{border:8px solid var(--pink);border-radius:6px;width:200px;height:200px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;margin:10px}
-.panel{width:100%;max-width:400px;background:rgba(0,0,0,0.5);padding:14px;border-radius:12px;display:flex;flex-direction:column;gap:12px}
-.indicator{height:80px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:24px}
-.indicator.red{background:linear-gradient(180deg,#7b0e12,#c41a1a);color:#fff}
-.indicator.green{background:linear-gradient(180deg,#0b6f3e,#2bd77b);color:#04210f}
-.hud{display:flex;flex-direction:column;gap:8px}
-.big-number{font-size:32px;font-weight:800}
-.status-ok{color:#bdecb4}
-.status-bad{color:#ffb6c1}
-.hand-display{margin-top:15px;width:120px;height:120px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:20px;background:rgba(0,0,0,0.2);}
-@media (max-width:480px){
-  header h1{font-size:22px;}
-  button{font-size:14px;padding:8px 12px;}
-  .pink-frame{width:160px;height:160px;font-size:18px;}
-  .hand-display{width:100px;height:100px;font-size:18px;}
-  .indicator{height:60px;font-size:20px;}
-  .big-number{font-size:28px;}
-}
-</style>
-</head>
-<body>
-
-<!-- INTRO PAGE -->
-<div id="introPage" class="page active">
-<header>
-<h1>Gooners Game</h1>
-<button id="playBtn">Play</button>
-</header>
-<div class="intro">
-<h2>Welcome to Gooners Game</h2>
-<p>Keep your "hand" on the screen during RED lights and off during GREEN lights. Fail and you lose!</p>
-<ul style="text-align:left;max-width:300px;margin:0 auto;">
-<li>RED light: Hand <u>on</u> the screen for 3 seconds.</li>
-<li>GREEN light: Hand <u>off</u> the screen.</li>
-<li>Use <b>tap and hold</b> or <b>touch</b> for hand on screen.</li>
-<li>Survive as many rounds as possible!</li>
-</ul>
-<div class="frames">
-<div class="frame">△</div>
-<div class="frame">○</div>
-<div class="frame">□</div>
-</div>
-</div>
-</div>
-
-<!-- GAME PAGE -->
-<div id="gamePage" class="page">
-<header>
-<h1>Gooners Game</h1>
-<button onclick="goToIntro()">← Back</button>
-</header>
-<div class="game-container">
-<div class="game-area">
-<div id="lightIndicator" class="indicator red">RED</div>
-<div class="hand-display" id="handDisplay">Hand</div>
-<p style="margin-top:10px;font-size:14px;text-align:center">Tap and hold anywhere to keep hand on screen during RED</p>
-</div>
-<div class="panel">
-<div class="hud">
-<div>Round: <span id="roundNum">0</span></div>
-<div>Time left: <span id="timeLeft" class="big-number">0</span>s</div>
-<div>Status: <span id="statusText" class="status-ok">Idle</span></div>
-<div>Last result: <span id="lastResult">—</span></div>
-</div>
-<button id="resetBtn">Reset</button>
-</div>
-</div>
-</div>
-
 <script>
-let handOn=false;
-document.addEventListener('touchstart', ()=>{handOn=true;});
-document.addEventListener('touchend', ()=>{handOn=false;});
-document.addEventListener('mousedown', ()=>{handOn=true;});
-document.addEventListener('mouseup', ()=>{handOn=false;});
-document.addEventListener('keydown', e=>{if(e.code==='Space') handOn=true;});
-document.addEventListener('keyup', e=>{if(e.code==='Space') handOn=false;});
+let handOn = false;
 
 const introPage=document.getElementById('introPage');
 const gamePage=document.getElementById('gamePage');
@@ -112,18 +16,29 @@ const handDisplay=document.getElementById('handDisplay');
 const resetBtn=document.getElementById('resetBtn');
 const playBtn=document.getElementById('playBtn');
 
+// --- Only set handOn when pressing the square ---
+handDisplay.addEventListener('mousedown', ()=>{ handOn=true; updateHandDisplay(); });
+handDisplay.addEventListener('mouseup', ()=>{ handOn=false; updateHandDisplay(); });
+handDisplay.addEventListener('touchstart', e=>{ e.preventDefault(); handOn=true; updateHandDisplay(); });
+handDisplay.addEventListener('touchend', e=>{ e.preventDefault(); handOn=false; updateHandDisplay(); });
+
+// Keyboard fallback for desktop
+document.addEventListener('keydown', e=>{ if(e.code==='Space'){ handOn=true; updateHandDisplay(); }});
+document.addEventListener('keyup', e=>{ if(e.code==='Space'){ handOn=false; updateHandDisplay(); }});
+
 function setIndicator(state){
   if(state==='red'){
     lightIndicator.className='indicator red';
-    lightIndicator.textContent='RED';
+    lightIndicator.textContent='RED – Keep gooning hand ON the square';
   } else {
     lightIndicator.className='indicator green';
-    lightIndicator.textContent='GREEN';
+    lightIndicator.textContent='GREEN – Take your hand OFF';
   }
 }
 
 function updateHandDisplay(){
-  handDisplay.style.backgroundColor = handOn ? 'rgba(43,215,123,0.5)' : 'rgba(0,0,0,0.2)';
+  handDisplay.style.backgroundColor = handOn ? 'rgba(43,215,123,0.6)' : 'rgba(0,0,0,0.2)';
+  handDisplay.textContent = handOn ? "✋ Gooning" : "🖐️ Off";
 }
 
 async function playGame(){
@@ -137,7 +52,7 @@ async function playGame(){
     round++;
     roundNum.textContent=round;
 
-    // RED light: 3 seconds
+    // RED light: must hold for 3s
     setIndicator('red');
     let redTime=3;
     for(let i=redTime;i>0;i--){
@@ -147,13 +62,13 @@ async function playGame(){
         running=false;
         statusText.textContent='Failed';
         statusText.className='status-bad';
-        lastResult.textContent=`Lost round ${round} (hand not on during RED)`;
+        lastResult.textContent=`Lost round ${round} (not holding during RED)`;
         return;
       }
       await new Promise(r=>setTimeout(r,1000));
     }
 
-    // GREEN light: 2-3 seconds randomly
+    // GREEN light: random 2–3s
     setIndicator('green');
     let greenTime=2+Math.floor(Math.random()*2);
     for(let i=greenTime;i>0;i--){
@@ -163,7 +78,7 @@ async function playGame(){
         running=false;
         statusText.textContent='Failed';
         statusText.className='status-bad';
-        lastResult.textContent=`Lost round ${round} (hand on during GREEN)`;
+        lastResult.textContent=`Lost round ${round} (still holding during GREEN)`;
         return;
       }
       await new Promise(r=>setTimeout(r,1000));
@@ -178,10 +93,3 @@ async function playGame(){
 resetBtn.addEventListener('click',()=>{location.reload();});
 playBtn.addEventListener('click',()=>{goToGame();});
 </script>
-
-</body>
-</html>
-
-
-I fixed the “Play Game” button—now it correctly switches to the game page and automatically starts the game on mobile or desktop.
-
