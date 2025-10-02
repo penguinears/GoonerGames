@@ -45,7 +45,7 @@ button{background:var(--pink);border:none;color:#050505;padding:10px 16px;border
 <div id="introPage" class="page active">
 <header>
 <h1>Gooners Game</h1>
-<button onclick="goToGame()">Play</button>
+<button id="playBtn">Play</button>
 </header>
 <div class="intro">
 <h2>Welcome to Gooners Game</h2>
@@ -61,7 +61,6 @@ button{background:var(--pink);border:none;color:#050505;padding:10px 16px;border
 <div class="frame">○</div>
 <div class="frame">□</div>
 </div>
-<button onclick="goToGame()">Start Playing →</button>
 </div>
 </div>
 
@@ -84,7 +83,6 @@ button{background:var(--pink);border:none;color:#050505;padding:10px 16px;border
 <div>Status: <span id="statusText" class="status-ok">Idle</span></div>
 <div>Last result: <span id="lastResult">—</span></div>
 </div>
-<button id="startBtn">Start Game</button>
 <button id="resetBtn">Reset</button>
 </div>
 </div>
@@ -96,12 +94,13 @@ document.addEventListener('touchstart', ()=>{handOn=true;});
 document.addEventListener('touchend', ()=>{handOn=false;});
 document.addEventListener('mousedown', ()=>{handOn=true;});
 document.addEventListener('mouseup', ()=>{handOn=false;});
-
 document.addEventListener('keydown', e=>{if(e.code==='Space') handOn=true;});
 document.addEventListener('keyup', e=>{if(e.code==='Space') handOn=false;});
 
-function goToGame(){document.getElementById('introPage').classList.remove('active');document.getElementById('gamePage').classList.add('active');}
-function goToIntro(){document.getElementById('gamePage').classList.remove('active');document.getElementById('introPage').classList.add('active');}
+const introPage=document.getElementById('introPage');
+const gamePage=document.getElementById('gamePage');
+function goToGame(){introPage.classList.remove('active');gamePage.classList.add('active');playGame();}
+function goToIntro(){gamePage.classList.remove('active');introPage.classList.add('active');location.reload();}
 
 let round=0,running=false;
 const lightIndicator=document.getElementById('lightIndicator');
@@ -109,9 +108,9 @@ const roundNum=document.getElementById('roundNum');
 const timeLeft=document.getElementById('timeLeft');
 const statusText=document.getElementById('statusText');
 const lastResult=document.getElementById('lastResult');
-const startBtn=document.getElementById('startBtn');
-const resetBtn=document.getElementById('resetBtn');
 const handDisplay=document.getElementById('handDisplay');
+const resetBtn=document.getElementById('resetBtn');
+const playBtn=document.getElementById('playBtn');
 
 function setIndicator(state){
   if(state==='red'){
@@ -155,19 +154,34 @@ async function playGame(){
     }
 
     // GREEN light: 2-3 seconds randomly
-    setIndicator('green
+    setIndicator('green');
+    let greenTime=2+Math.floor(Math.random()*2);
+    for(let i=greenTime;i>0;i--){
+      timeLeft.textContent=i;
+      updateHandDisplay();
+      if(handOn){
+        running=false;
+        statusText.textContent='Failed';
+        statusText.className='status-bad';
+        lastResult.textContent=`Lost round ${round} (hand on during GREEN)`;
+        return;
+      }
+      await new Promise(r=>setTimeout(r,1000));
+    }
+
+    statusText.textContent='Safe';
+    statusText.className='status-ok';
+    lastResult.textContent=`Survived round ${round}`;
+  }
+}
+
+resetBtn.addEventListener('click',()=>{location.reload();});
+playBtn.addEventListener('click',()=>{goToGame();});
+</script>
+
+</body>
+</html>
 
 
-The website is now fully mobile-optimized:
-
-All buttons and frames scale for small screens.
-
-Input works via touch (tap and hold), mouse, or spacebar.
-
-RED light: hold hand on screen for 3 seconds, GREEN light: release hand.
-
-Automatic round progression with immediate fail if rules are broken.
-
-
-It’s ready for mobile users and looks Squid Game–themed.
+I fixed the “Play Game” button—now it correctly switches to the game page and automatically starts the game on mobile or desktop.
 
