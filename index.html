@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Squid Game - Red Light Green Light</title>
+<style>
+:root{--pink:#ff5fa8;--dark:#0b2b1f;}
+html,body{margin:0;padding:0;height:100%;font-family:Arial, sans-serif;background:linear-gradient(180deg,#061a13,#0b2b1f);color:#eafaf0;}
+.page{display:none;min-height:100vh;padding:40px;box-sizing:border-box}
+.active{display:block}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px}
+header h1{color:var(--pink);margin:0;font-size:36px}
+button{background:var(--pink);border:none;color:#050505;padding:12px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-size:16px}
+.intro{text-align:center;max-width:800px;margin:0 auto}
+.intro h2{font-size:28px;margin-bottom:20px}
+.intro p{font-size:18px;line-height:1.6}
+.frames{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:40px 0}
+.frame{border:8px solid var(--pink);height:160px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold}
+.game-container{display:flex;gap:20px;flex-wrap:wrap}
+.game-area{flex:2;position:relative;background:rgba(0,0,0,0.25);border-radius:12px;padding:14px;min-height:500px;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.pink-frame{border:10px solid var(--pink);border-radius:6px;width:300px;height:300px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;margin:10px}
+.panel{flex:1;min-width:250px;background:rgba(0,0,0,0.5);padding:14px;border-radius:12px;display:flex;flex-direction:column;gap:12px}
+.indicator{height:120px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:28px}
+.indicator.red{background:linear-gradient(180deg,#7b0e12,#c41a1a);color:#fff}
+.indicator.green{background:linear-gradient(180deg,#0b6f3e,#2bd77b);color:#04210f}
+.hud{display:flex;flex-direction:column;gap:8px}
+.big-number{font-size:44px;font-weight:800}
+.status-ok{color:#bdecb4}
+.status-bad{color:#ffb6c1}
+.hand-btn{margin-top:20px;padding:12px 20px;font-size:16px;border-radius:8px;border:none;background:var(--pink);cursor:pointer;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- INTRO PAGE -->
+<div id="introPage" class="page active">
+<header>
+<h1>Squid Game</h1>
+<button onclick="goToGame()">Play Game</button>
+</header>
+<div class="intro">
+<h2>Welcome to Red Light / Green Light</h2>
+<p>In this game, you must manage your "hand" according to the lights:</p>
+<ul style="text-align:left;max-width:500px;margin:0 auto;font-size:18px;line-height:1.5">
+<li><b>RED LIGHT:</b> Hand <u>on</u> the screen.</li>
+<li><b>GREEN LIGHT:</b> Hand <u>off</u> the screen.</li>
+<li>If you fail the rule, you lose the round.</li>
+</ul>
+<div class="frames">
+<div class="frame">△</div>
+<div class="frame">○</div>
+<div class="frame">□</div>
+</div>
+<p>Press the button on the game page to toggle your hand state. Survive as many rounds as possible!</p>
+<button onclick="goToGame()">Start Playing →</button>
+</div>
+</div>
+
+<!-- GAME PAGE -->
+<div id="gamePage" class="page">
+<header>
+<h1>Red Light / Green Light</h1>
+<button onclick="goToIntro()">← Back</button>
+</header>
+<div class="game-container">
+<div class="game-area">
+<div id="lightIndicator" class="indicator red">RED</div>
+<div class="pink-frame" id="handDisplay">Hand</div>
+<button class="hand-btn" id="handBtn">Toggle Hand</button>
+</div>
+<div class="panel">
+<div class="hud">
+<div>Round: <span id="roundNum">0</span></div>
+<div>Time left: <span id="timeLeft" class="big-number">0</span>s</div>
+<div>Status: <span id="statusText" class="status-ok">Idle</span></div>
+<div>Last result: <span id="lastResult">—</span></div>
+</div>
+<button id="startBtn">Start Round</button>
+<button id="resetBtn">Reset</button>
+</div>
+</div>
+</div>
+
+<script>
+let handOn=false;
+document.getElementById('handBtn').addEventListener('click',()=>{
+  handOn=!handOn;
+  document.getElementById('handDisplay').style.backgroundColor=handOn?'rgba(43,215,123,0.5)':'rgba(0,0,0,0.2)';
+});
+
+function goToGame(){document.getElementById('introPage').classList.remove('active');document.getElementById('gamePage').classList.add('active');}
+function goToIntro(){document.getElementById('gamePage').classList.remove('active');document.getElementById('introPage').classList.add('active');}
+
+let round=0,running=false;
+const lightIndicator=document.getElementById('lightIndicator');
+const roundNum=document.getElementById('roundNum');
+const timeLeft=document.getElementById('timeLeft');
+const statusText=document.getElementById('statusText');
+const lastResult=document.getElementById('lastResult');
+const startBtn=document.getElementById('startBtn');
+const resetBtn=document.getElementById('resetBtn');
+
+function setIndicator(state){
+  if(state==='red'){
+    lightIndicator.className='indicator red';
+    lightIndicator.textContent='RED';
+  }else{
+    lightIndicator.className='indicator green';
+    lightIndicator.textContent='GREEN';
+  }
+}
+
+async function playRound(){
+  if(running)return;
+  round++;
+  roundNum.textContent=round;
+  running=true;
+  statusText.textContent='Playing';
+
+  const sequence=[
+    {color:'red',duration:5},
+    {color:'green',duration:4}
+  ];
+
+  for(const step of sequence){
+    setIndicator(step.color);
+    let t=step.duration;
+    while(t>0){
+      timeLeft.textContent=t;
+      if(step.color==='red' && !handOn){
+        running=false;
+        statusText.textContent='Failed';
+        statusText.className='status-bad';
+        lastResult.textContent=`Lost round ${round} (hand not on during RED)`;
+        setIndicator('red');
+        return;
+      }
+      if(step.color==='green' && handOn){
+        running=false;
+        statusText.textContent='Failed';
+        statusText.className='status-bad';
+        lastResult.textContent=`Lost round ${round} (hand on during GREEN)`;
+        setIndicator('green');
+        return;
+      }
+      await new Promise(r=>setTimeout(r,1000));
+      t--;
+    }
+  }
+  running=false;
+  statusText.textContent='Safe';
+  statusText.className='status-ok';
+  lastResult.textContent=`Survived round ${round}`;
+}
+
+startBtn.addEventListener('click',()=>{playRound();});
+resetBtn.addEventListener('click',()=>{location.reload();});
+</script>
+
+</body>
+</html>
+
+
+I updated the site to a full two-page Squid Game website without a webcam:
+
+Intro page: shows rules and Squid Game symbols (△ ○ □), with a “Start Playing” button.
+
+Game page: players use a toggle button to represent the hand. Red light requires hand on, green requires hand off. Failing the rule ends the round.
+
+Styled with pink frames and Squid Game–like colors, with a panel showing round, time, and status.
+
+
+It’s now fully playable and looks fun, just like Squid Game.
+
+I can next add animation effects for red/green lights and a “hand moving” visual inside the pink frame to make it feel more like the show. Do you want me to do that?
+
